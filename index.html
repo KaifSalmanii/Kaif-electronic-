@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d17">
+  <meta name="description" content="Personal dashboard: income & expense tracker, graphs, reminders, tasks, WhatsApp chat. Offline ready.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Kaif">
+  <title>Kaif Dashboard</title>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="bg" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">K</span>
+      <div>
+        <strong data-i18n="appName">Kaif Dashboard</strong>
+        <small class="netline"><span class="net-dot" id="netDot"></span><span id="netText">Online</span></small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <select id="langSelect" class="pill" aria-label="Language">
+        <option value="en">English</option>
+        <option value="hi">हिन्दी</option>
+        <option value="hinglish">Hinglish</option>
+      </select>
+      <button id="fsBtn" class="icon-btn" data-i18n-title="set.fullscreen" title="Fullscreen" aria-label="Fullscreen">⛶</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- HOME / WIDGETS -->
+    <section id="view-home" class="view" data-view="home">
+      <h1 class="page-title" data-i18n="home.greeting">Welcome back</h1>
+      <div class="widgets">
+        <article class="card w-clock anim" style="--i:0">
+          <div class="clock" id="clock">--:--</div>
+          <div class="muted" id="dateText"></div>
+        </article>
+        <article class="card w-balance anim" style="--i:1">
+          <small class="muted" data-i18n="home.balance">Total balance</small>
+          <div class="big" id="wBalance">₹0</div>
+        </article>
+        <article class="card w-month anim" style="--i:2">
+          <small class="muted" data-i18n="home.month">This month</small>
+          <div class="split">
+            <div><span class="muted small" data-i18n="home.income">Income</span><b class="inc" id="wIncome">₹0</b></div>
+            <div><span class="muted small" data-i18n="home.expense">Expense</span><b class="exp" id="wExpense">₹0</b></div>
+          </div>
+        </article>
+        <article class="card w-next anim" style="--i:3">
+          <small class="muted" data-i18n="home.next">Next reminder</small>
+          <div id="wNext" class="next">—</div>
+        </article>
+        <article class="card w-tasks anim" style="--i:4">
+          <small class="muted" data-i18n="home.pending">Pending tasks</small>
+          <div class="big" id="wTasks">0</div>
+        </article>
+      </div>
+
+      <h2 class="section-title" data-i18n="home.quick">Quick actions</h2>
+      <div class="quick">
+        <button class="qbtn anim" style="--i:5" data-go="money" data-type="expense" data-focus="txAmount" data-i18n="home.addExpense">+ Expense</button>
+        <button class="qbtn anim" style="--i:6" data-go="money" data-type="income" data-focus="txAmount" data-i18n="home.addIncome">+ Income</button>
+        <button class="qbtn anim" style="--i:7" data-go="reminders" data-focus="remTitle" data-i18n="home.addReminder">+ Reminder</button>
+        <button class="qbtn anim" style="--i:8" data-go="chat" data-focus="chatPhone" data-i18n="home.chat">WhatsApp chat</button>
+      </div>
+    </section>
+
+    <!-- MONEY -->
+    <section id="view-money" class="view" data-view="money">
+      <h1 class="page-title" data-i18n="money.title">Income & Expenses</h1>
+
+      <div class="card anim" style="--i:0">
+        <form id="txForm" class="form">
+          <div class="seg" role="radiogroup">
+            <label><input type="radio" name="txType" value="expense" checked><span data-i18n="money.expense">Expense</span></label>
+            <label><input type="radio" name="txType" value="income"><span data-i18n="money.income">Income</span></label>
+          </div>
+          <div class="row-gap">
+            <input id="txAmount" type="number" inputmode="decimal" min="0" step="0.01" required placeholder="0" data-i18n-ph="common.amount" class="grow">
+            <select id="txCat" aria-label="Category" class="grow"></select>
+          </div>
+          <div class="row-gap">
+            <input id="txDate" type="date" required class="grow" aria-label="Date">
+            <input id="txNote" type="text" maxlength="120" data-i18n-ph="common.note" placeholder="Note" class="grow">
+          </div>
+          <button class="btn primary" type="submit" data-i18n="money.add">Add entry</button>
+        </form>
+      </div>
+
+      <div class="card anim" style="--i:1">
+        <div class="row-between">
+          <h3 data-i18n="money.list">Entries</h3>
+          <input type="month" id="txMonth" aria-label="Month">
+        </div>
+        <ul id="txList" class="list"></ul>
+      </div>
+
+      <div class="grid2">
+        <div class="card anim" style="--i:2">
+          <h3 data-i18n="money.chartMonthly">Last 6 months</h3>
+          <canvas id="chBar" class="chart" aria-label="Monthly income vs expense chart"></canvas>
+          <div class="legend">
+            <span><i class="dot" style="background:#34d399"></i><span data-i18n="money.income">Income</span></span>
+            <span><i class="dot" style="background:#f87171"></i><span data-i18n="money.expense">Expense</span></span>
+          </div>
+        </div>
+        <div class="card anim" style="--i:3">
+          <h3 data-i18n="money.chartCategory">Expense by category</h3>
+          <canvas id="chDonut" class="chart chart-sm" aria-label="Expense by category chart"></canvas>
+          <ul id="catLegend" class="legend-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- REMINDERS -->
+    <section id="view-reminders" class="view" data-view="reminders">
+      <h1 class="page-title" data-i18n="rem.title">Reminders</h1>
+      <div class="card anim" style="--i:0">
+        <form id="remForm" class="form">
+          <input id="remTitle" type="text" required maxlength="120" data-i18n-ph="rem.titleLabel" placeholder="What to remember?">
+          <div class="row-gap">
+            <input id="remAt" type="datetime-local" required class="grow" aria-label="Date and time">
+            <button class="btn primary" type="submit" data-i18n="rem.add">Add</button>
+          </div>
+        </form>
+        <p class="hint" id="notifHint"></p>
+      </div>
+      <div class="card anim" style="--i:1">
+        <h3 data-i18n="rem.upcoming">Upcoming</h3>
+        <ul id="remList" class="list"></ul>
+      </div>
+    </section>
+
+    <!-- TASKS -->
+    <section id="view-tasks" class="view" data-view="tasks">
+      <h1 class="page-title" data-i18n="task.title">Tasks</h1>
+      <div class="card anim" style="--i:0">
+        <form id="taskForm" class="row-gap">
+          <input id="taskInput" type="text" required maxlength="160" class="grow" data-i18n-ph="task.placeholder" placeholder="New task">
+          <button class="btn primary" type="submit" data-i18n="task.add">Add</button>
+        </form>
+      </div>
+      <div class="card anim" style="--i:1">
+        <div class="row-between"><h3 data-i18n="task.list">All tasks</h3><span class="muted small" id="taskLeft"></span></div>
+        <ul id="taskList" class="list"></ul>
+      </div>
+    </section>
+
+    <!-- CHAT -->
+    <section id="view-chat" class="view" data-view="chat">
+      <h1 class="page-title" data-i18n="chat.title">WhatsApp chat</h1>
+      <div class="card anim" style="--i:0">
+        <p class="muted" data-i18n="chat.desc">Mobile number daalo aur seedha WhatsApp chat khul jayegi.</p>
+        <form id="chatForm" class="form">
+          <div class="row-gap">
+            <select id="ccSelect" aria-label="Country code" class="cc">
+              <option value="91">🇮🇳 +91</option>
+              <option value="1">🇺🇸 +1</option>
+              <option value="44">🇬🇧 +44</option>
+              <option value="971">🇦🇪 +971</option>
+              <option value="966">🇸🇦 +966</option>
+              <option value="65">🇸🇬 +65</option>
+              <option value="61">🇦🇺 +61</option>
+              <option value="880">🇧🇩 +880</option>
+              <option value="92">🇵🇰 +92</option>
+              <option value="977">🇳🇵 +977</option>
+            </select>
+            <input id="chatPhone" type="tel" inputmode="tel" autocomplete="tel" class="grow" placeholder="9876543210" data-i18n-ph="chat.phone">
+          </div>
+          <p class="hint" id="chatPreview"></p>
+          <textarea id="chatMsg" rows="3" maxlength="500" data-i18n-ph="chat.msg" placeholder="Message (optional)"></textarea>
+          <p id="chatErr" class="err" role="alert"></p>
+          <div class="row-gap">
+            <button class="btn wa grow" type="submit" data-i18n="chat.open">Open WhatsApp chat</button>
+            <a id="callBtn" class="btn ghost" href="#" data-i18n="chat.call">Call</a>
+          </div>
+        </form>
+      </div>
+      <div class="card anim" style="--i:1">
+        <h3 data-i18n="chat.recent">Recent</h3>
+        <ul id="recentList" class="chips"></ul>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view" data-view="settings">
+      <h1 class="page-title" data-i18n="set.title">Settings</h1>
+
+      <div class="card anim" style="--i:0">
+        <h3 data-i18n="set.general">General</h3>
+        <div class="setting">
+          <span data-i18n="set.language">Language</span>
+          <select id="setLang" class="pill" aria-label="Language">
+            <option value="en">English</option>
+            <option value="hi">हिन्दी</option>
+            <option value="hinglish">Hinglish</option>
+          </select>
+        </div>
+        <div class="setting">
+          <span data-i18n="set.theme">Theme</span>
+          <button id="themeBtn" class="btn ghost small-btn"></button>
+        </div>
+        <div class="setting">
+          <span data-i18n="set.fullscreen">Full screen</span>
+          <button id="fsBtn2" class="btn ghost small-btn" data-i18n="set.open">Open</button>
+        </div>
+        <div class="setting">
+          <span data-i18n="set.notify">Reminder notifications</span>
+          <button id="notifyBtn" class="btn ghost small-btn" data-i18n="set.enable">Enable</button>
+        </div>
+      </div>
+
+      <div class="card anim" style="--i:1">
+        <h3 data-i18n="set.install">Install app</h3>
+        <p class="hint" id="installHint"></p>
+        <button id="installBtn" class="btn primary" hidden data-i18n="set.installBtn">Install</button>
+      </div>
+
+      <div class="card anim" style="--i:2">
+        <h3 data-i18n="set.sync">Cloud sync (Supabase)</h3>
+        <p class="hint" data-i18n="set.syncHint">Same sync code on all your devices = same data. Offline me bhi kaam karega, online aane par sync hoga.</p>
+        <form id="syncForm" class="form">
+          <input id="syncCode" type="text" minlength="4" maxlength="64" autocomplete="off" data-i18n-ph="set.syncCode" placeholder="Sync code (secret)">
+          <div class="row-gap">
+            <button class="btn primary grow" type="submit" data-i18n="set.save">Save</button>
+            <button id="syncNowBtn" class="btn ghost" type="button" data-i18n="set.syncNow">Sync now</button>
+          </div>
+        </form>
+        <p class="hint" id="syncStatus"></p>
+      </div>
+
+      <div class="card anim" style="--i:3">
+        <h3 data-i18n="set.data">Data</h3>
+        <div class="row-gap wrap">
+          <button id="exportBtn" class="btn ghost" data-i18n="set.export">Export backup</button>
+          <label class="btn ghost file-btn"><span data-i18n="set.import">Import backup</span><input id="importFile" type="file" accept="application/json" hidden></label>
+          <button id="clearBtn" class="btn danger" data-i18n="set.clear">Clear all</button>
+        </div>
+        <p class="hint" data-i18n="set.offlineReady">Ye app offline bhi chalegi.</p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="bottomnav" aria-label="Main">
+    <a class="nav-btn" href="#home" data-view="home"><span class="ico">🏠</span><span data-i18n="nav.home">Home</span></a>
+    <a class="nav-btn" href="#money" data-view="money"><span class="ico">💰</span><span data-i18n="nav.money">Money</span></a>
+    <a class="nav-btn" href="#reminders" data-view="reminders"><span class="ico">⏰</span><span data-i18n="nav.reminders">Reminders</span></a>
+    <a class="nav-btn" href="#tasks" data-view="tasks"><span class="ico">✅</span><span data-i18n="nav.tasks">Tasks</span></a>
+    <a class="nav-btn" href="#chat" data-view="chat"><span class="ico">💬</span><span data-i18n="nav.chat">Chat</span></a>
+    <a class="nav-btn" href="#settings" data-view="settings"><span class="ico">⚙️</span><span data-i18n="nav.settings">Settings</span></a>
+  </nav>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
